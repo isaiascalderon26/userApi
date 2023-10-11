@@ -4,6 +4,8 @@ import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
+
 @Entity
 @Table(name = "usuarios")
 @Data
@@ -20,7 +22,7 @@ public class Usuario {
     private String token;
     private boolean isActive;
 
-    @ElementCollection
-    @CollectionTable(name = "telefonos", joinColumns = @JoinColumn(name = "usuario_id"))
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "usuario_id")
     private List<Telefono> phones;
 }

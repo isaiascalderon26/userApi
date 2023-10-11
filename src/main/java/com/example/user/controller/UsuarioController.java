@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import com.example.user.model.Usuario;
 import com.example.user.exception.CorreoExistenteException;
 import com.example.user.exception.FormatoInvalidoException;
-
+import com.example.user.model.ErrorResponseBody;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -19,66 +18,76 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping("/registro")
+    @ResponseBody
     public ResponseEntity<?> registrarUsuario(@RequestBody Usuario usuario) {
         try {
             Usuario registrado = usuarioService.registrarUsuario(usuario);
-            return new ResponseEntity<>(registrado, HttpStatus.CREATED);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registrado);
         } catch (CorreoExistenteException ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"El correo ya registrado\"}", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body("{\"mensaje\": \"El correo ya está registrado\"}");
         } catch (FormatoInvalidoException ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"Formato de correo o contraseña inválido\"}", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body("{\"mensaje\": \"Formato de correo o contraseña inválido\"}");
         }
     }
 
     @GetMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<?> obtenerUsuarioPorId(@PathVariable Long id) {
         try {
             Usuario usuario = usuarioService.obtenerUsuarioPorId(id);
             if (usuario != null) {
-                return new ResponseEntity<>(usuario, HttpStatus.OK);
+                return ResponseEntity.ok(usuario);
             } else {
-                return new ResponseEntity<>("{\"mensaje\": \"Usuario no encontrado\"}", HttpStatus.NOT_FOUND);
+                ErrorResponseBody error = new ErrorResponseBody("Usuario no encontrado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
         } catch (Exception ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"Error al obtener usuario\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorResponseBody error = new ErrorResponseBody("Error al obtener usuario");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 
     @GetMapping("/todos")
+    @ResponseBody
     public ResponseEntity<?> obtenerTodosLosUsuarios() {
         try {
             List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
-            return new ResponseEntity<>(usuarios, HttpStatus.OK);
+            return ResponseEntity.ok(usuarios);
         } catch (Exception ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"Error al obtener usuarios\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"mensaje\": \"Error al obtener usuarios\"}");
         }
     }
 
     @PutMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
         try {
             Usuario actualizado = usuarioService.actualizarUsuario(id, usuario);
             if (actualizado != null) {
-                return new ResponseEntity<>(actualizado, HttpStatus.OK);
+                return ResponseEntity.ok(actualizado);
             } else {
-                return new ResponseEntity<>("{\"mensaje\": \"Usuario no encontrado\"}", HttpStatus.NOT_FOUND);
+                ErrorResponseBody error = new ErrorResponseBody("Usuario no encontrado");
+                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
             }
         } catch (Exception ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"Error al actualizar usuario\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorResponseBody error = new ErrorResponseBody("Error al actualizar usuario");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<?> eliminarUsuario(@PathVariable Long id) {
         try {
             boolean eliminado = usuarioService.eliminarUsuario(id);
             if (eliminado) {
-                return new ResponseEntity<>("{\"mensaje\": \"Usuario eliminado con éxito\"}", HttpStatus.OK);
+                return ResponseEntity.ok(new ErrorResponseBody("Usuario eliminado con éxito"));
             } else {
-                return new ResponseEntity<>("{\"mensaje\": \"Usuario no encontrado\"}", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ErrorResponseBody("Usuario no encontrado"), HttpStatus.NOT_FOUND);
             }
         } catch (Exception ex) {
-            return new ResponseEntity<>("{\"mensaje\": \"Error al eliminar usuario\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorResponseBody error = new ErrorResponseBody("Error al eliminar usuario");
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
