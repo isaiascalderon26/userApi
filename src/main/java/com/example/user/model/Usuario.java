@@ -1,5 +1,6 @@
 package com.example.user.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ public class Usuario {
     private String token;
     private boolean isActive;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "usuario_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "usuario")
+    @JsonManagedReference
     private List<Telefono> phones;
 }
